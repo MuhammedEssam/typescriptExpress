@@ -2,6 +2,7 @@
 import * as mongoose from 'mongoose';
 import Student from '../models/student';
 import { Request, Response, NextFunction } from 'express';
+import HttpException from '../Execptions/HttpException';
 
 // const StudentMongooseModel = mongoose.model('Student', StudentSchema);
 
@@ -12,7 +13,7 @@ export class StudentController {
             let newStudent = await Student.create(req.body);
             res.send(newStudent)
         } catch (err) {
-            next(err)
+            next(new HttpException(404, 'Post not found'));
         }
 
     }
@@ -26,10 +27,11 @@ export class StudentController {
         });
     }
 
-    public getStudentById(req: Request, res: Response) {
+    public getStudentById(req: Request, res: Response,next:NextFunction) {
+        if(!req.params.studentId) return next(new HttpException(404, 'Post not found'));
         Student.findById(req.params.studentId, (err, data) => {
             if (err) {
-                res.send(err);
+                next(new HttpException(404, 'Post not found'));
             }
             res.json(data);
         });

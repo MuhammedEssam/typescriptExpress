@@ -3,6 +3,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import { Routes } from "./routes";
 import mongoose from 'mongoose';
+import errorMiddleware from './errors/error.middleware';
 
 class App {
     public app: express.Application;
@@ -14,6 +15,7 @@ class App {
         this.routePrv.routes(this.app);
         this.mongoSetup();
         this.listen()
+        this.initializeErrorHandling()
     }
     private config(): void {
 
@@ -38,6 +40,10 @@ class App {
             console.log(`App listening on the port ${this.port}`);
         });
     }
+    private initializeErrorHandling() {
+        this.app.use(errorMiddleware);
+      }    
+
 }
 
 export default new App().app;
