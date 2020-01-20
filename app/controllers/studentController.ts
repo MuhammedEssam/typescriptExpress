@@ -10,7 +10,7 @@ export class StudentController {
 
     public async addNewStudent(req: Request, res: Response, next: NextFunction) {
         try {
-             let validationErrors = validationResult(req).array({
+            let validationErrors = validationResult(req).array({
                 onlyFirstError: true
             });
             if (validationErrors.length > 0) {
@@ -35,14 +35,16 @@ export class StudentController {
         });
     }
 
-    public getStudentById(req: Request, res: Response, next: NextFunction) {
-        if (!req.params.studentId) return next(new HttpException(422, 'Post not found'));
-        Student.findById(req.params.studentId, (err, data) => {
-            if (err) {
-                next(new HttpException(404, 'Post not found'));
-            }
-            res.json(data);
-        });
+    public async getStudentById(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.params.studentId) return next(new HttpException(400, 'Post not found'));
+            let student = await Student.findById(req.params.studentId)
+            if(!student) return next(new HttpException(400, 'Post not found'));
+            res.send(student)
+        } catch (err) {
+            next(err)
+        }
+
     }
 
     public updateStudent(req: Request, res: Response) {
