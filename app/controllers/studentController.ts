@@ -3,17 +3,25 @@ import * as mongoose from 'mongoose';
 import Student from '../models/student';
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '../Execptions/HttpException';
-
-// const StudentMongooseModel = mongoose.model('Student', StudentSchema);
+import { matchedData } from 'express-validator/filter'
+import { validationResult } from 'express-validator/check'
 
 export class StudentController {
 
     public async addNewStudent(req: Request, res: Response, next: NextFunction) {
         try {
-            let newStudent = await Student.create(req.body);
+             let validationErrors = validationResult(req).array({
+                onlyFirstError: true
+            });
+            if (validationErrors.length > 0) {
+                //deleteTempImages(req);
+                throw new HttpException(422, validationErrors)
+            }
+            let data = matchedData(req)
+            let newStudent = await Student.create(data);
             res.send(newStudent)
         } catch (err) {
-            next(new HttpException(404, 'Post not found'));
+            next(err);
         }
 
     }
@@ -27,8 +35,8 @@ export class StudentController {
         });
     }
 
-    public getStudentById(req: Request, res: Response,next:NextFunction) {
-        if(!req.params.studentId) return next(new HttpException(404, 'Post not found'));
+    public getStudentById(req: Request, res: Response, next: NextFunction) {
+        if (!req.params.studentId) return next(new HttpException(422, 'Post not found'));
         Student.findById(req.params.studentId, (err, data) => {
             if (err) {
                 next(new HttpException(404, 'Post not found'));
